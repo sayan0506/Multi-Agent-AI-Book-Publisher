@@ -45,7 +45,7 @@ jobs:
         #   username: ${{ secrets.ACR_USERNAME }}
         #   password: ${{ secrets.ACR_PASSWORD }}
         with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Login to Azure Container Registry
         run: az acr login --name aibookpublisheragentic
