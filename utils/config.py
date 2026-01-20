@@ -42,7 +42,9 @@ class Config:
 	
 	# OpenRouter Settings
 	LLM_API_KEY : str = os.getenv("OPENROUTER_API_KEY",
-							   "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")
+							   "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"
+							   #"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"
+							   )
 
 	MODEL_NAME : str = os.getenv("OPENROUTER_MODEL", "openai/gpt-4o")
 	BASE_URL : str = os.getenv(
