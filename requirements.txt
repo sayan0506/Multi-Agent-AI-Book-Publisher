@@ -13,3 +13,4 @@ playwright==1.52.0
 protobuf==3.20.3
 python-dotenv==1.1.1
 streamlit==1.46.0
+numpy<2.0

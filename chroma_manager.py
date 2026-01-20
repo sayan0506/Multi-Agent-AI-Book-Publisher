@@ -22,18 +22,36 @@ class ChromaManager:
         self.config = Config()
 
         # initialize the gcloud client for uploading files to GCS bucket
-        try: 
-            self.storage_client = storage.Client(
-                project=self.config.PROJECT_ID,
-            )
+        # try: 
+        #     self.storage_client = storage.Client(
+        #         project=self.config.PROJECT_ID,
+        #     )
             
-            self.bucket = self.storage_client.get_bucket(self.config.GCS_BUCKET_NAME)
-            logger.info(f"Connected to Google Cloud Storage Bucket {self.bucket.name}")
+        #     self.bucket = self.storage_client.get_bucket(self.config.GCS_BUCKET_NAME)
+        #     logger.info(f"Connected to Google Cloud Storage Bucket {self.bucket.name}")
         
-        except DefaultCredentialsError as e:
-            logger.warning("GCS credentials not found,  using local storage")
-            self.storage_client = None
-            self.bucket = None
+        # except DefaultCredentialsError as e:
+        #     logger.warning("GCS credentials not found,  using local storage")
+        #     self.storage_client = None
+        #     self.bucket = None      
+        try:
+            if os.path.exists(self.config.GCP_JSON_CREDENTIALS_PATH):
+                self.storage_client = storage.Client.from_service_account_json(
+                    self.config.GCP_JSON_CREDENTIALS_PATH,
+                    project=self.config.PROJECT_ID
+                )
+                self.bucket = self.storage_client.get_bucket(self.config.GCS_BUCKET_NAME)
+                logger.info(f"Connected to Google Cloud Storage Bucket {self.bucket.name} using service account.")
+            else:
+                 # Fallback to default credentials if the file doesn't exist
+                 self.storage_client = storage.Client(project=self.config.PROJECT_ID)
+                 self.bucket = self.storage_client.get_bucket(self.config.GCS_BUCKET_NAME)
+                 logger.info(f"Connected to Google Cloud Storage Bucket {self.bucket.name} using default credentials.")
+ 
+        except (DefaultCredentialsError, FileNotFoundError) as e:
+             logger.warning(f"GCS credentials not found or invalid ({e}), using local storage.")
+             self.storage_client = None
+             self.bucket = None
         
         # setup chromaDB path
         self.chroma_path = self._setup_chroma_path()

@@ -7,29 +7,39 @@ from google.cloud import aiplatform
 from google import genai
 from utils.config import Config, WorkflowState
 from typing import Dict 
-from langchain_google_vertexai import (
-    VertexAI,
-    ChatVertexAI,
-    VertexAIEmbeddings,
-    VectorSearchVectorStore
-)
+# from langchain_google_vertexai import (
+#     VertexAI,
+#     ChatVertexAI,
+#     VertexAIEmbeddings,
+#     VectorSearchVectorStore
+# )
+from openai import OpenAI
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from chroma_manager import ChromaManager
+import logging
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class WriterAgent:
     def __init__(self):
         self.config = Config()
-        self.generation_config = GenerateContentConfig(
-            temperature = 0,
-            max_output_tokens = self.config.GEMINI_OUTPUT_TOKEN_LIMIT
+        # self.generation_config = GenerateContentConfig(
+        #     temperature = 0,
+        #     max_output_tokens = self.config.GEMINI_OUTPUT_TOKEN_LIMIT
+        # )
+        # self.client = genai.Client(
+        #     vertexai=True,
+        #     project=self.config.PROJECT_ID,
+        #     location=self.config.LOCATION,
+        # )
+        self.client = OpenAI(
+            api_key = self.config.LLM_API_KEY, 
+            base_url = self.config.BASE_URL,
         )
-        self.client = genai.Client(
-            vertexai=True,
-            project=self.config.PROJECT_ID,
-            location=self.config.LOCATION,
-        )
+
+        self.model = self.config.MODEL_NAME
 
         # chromadb
         self.chroma_manager = ChromaManager()
@@ -82,11 +92,28 @@ class WriterAgent:
         """
 
         try:
-            writer_output = self.client.models.generate_content(
+            writer_output = self.client.chat.completions.create(
                 model = self.config.MODEL_NAME,
-                contents= [prompt],
-                config = self.generation_config
+                messages = [
+                    {
+                        "role": "system",
+                        "content": "You are a creative writer working for book publications"
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                max_tokens = self.config.MAX_TOKENS,
+                temperature = self.config.TEMPERATURE
             )
+            # writer_output = self.client.models.generate_content(
+            #     model = self.config.MODEL_NAME,
+            #     contents= [prompt],
+            #     config = self.generation_config
+            # )
+
+            writer_output = writer_output.choices[0].message.content
 
             # store content to chromadb
             metadata = {
@@ -99,13 +126,14 @@ class WriterAgent:
             }
 
             # call Chromamanager to store the content with versioning
-            self.chroma_manager.store_content(writer_output.text, metadata)
+            #self.chroma_manager.store_content(writer_output.text, metadata)
+            self.chroma_manager.store_content(writer_output, metadata)
             print(f"Storing content to chroma: {metadata}")
 
             return {
                 **state,
-                'current_content': writer_output.text,
-                'writer_output': writer_output.text,
+                'current_content': writer_output,#writer_output.text,
+                'writer_output': writer_output,#writer_output.text,
                 'messsages' : AIMessage(content=f"Writer: Content enhanced and rewritten"),
                 "status": "writer_completed"
             }

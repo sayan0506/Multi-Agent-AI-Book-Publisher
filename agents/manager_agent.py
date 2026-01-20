@@ -4,20 +4,33 @@ from google import genai
 from google.genai.types import GenerateContentConfig
 from utils.config import Config, WorkflowState
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from openai import OpenAI
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class ManagerAgent:
     def __init__(self):
         self.config = Config() 
-        self.generation_config = GenerateContentConfig(
-            temperature=self.config.TEMPERATURE, 
-            max_output_tokens=self.config.GEMINI_OUTPUT_TOKEN_LIMIT
-            )
-        self.client = genai.Client(
-            project=self.config.PROJECT_ID,
-            location=self.config.LOCATION,
-            vertexai=True
+        # self.generation_config = GenerateContentConfig(
+        #     temperature=self.config.TEMPERATURE, 
+        #     max_output_tokens=self.config.GEMINI_OUTPUT_TOKEN_LIMIT
+        #     )
+        # self.client = genai.Client(
+        #     project=self.config.PROJECT_ID,
+        #     location=self.config.LOCATION,
+        #     vertexai=True
+        # )
+        self.client = OpenAI(
+            api_key = self.config.LLM_API_KEY, 
+            base_url = self.config.BASE_URL,
         )
+
+        self.model = self.config.MODEL_NAME
+
 
     def manager_workflow(self, state: WorkflowState)->WorkflowState:
         """Content Manager Agent - Makes workflow decisions based on current state of workflow"""
@@ -46,18 +59,40 @@ class ManagerAgent:
 
         What should be the next step?"""
 
-        # as we are using async then need to use await keyword before client call
-        manager_decision = self.client.models.generate_content(
-            model = self.config.MODEL_NAME,
-            contents=[manager_prompt],
-            config = self.generation_config
-        )        
 
-        print(f"Manager Decision: {manager_decision.candidates[0].content.parts[0].text.strip().lower()}")
+        # as we are using async then need to use await keyword before client call
+        manager_decision = self.client.chat.completions.create(
+                model = self.config.MODEL_NAME,
+                messages = [
+                    {
+                        "role": "system",
+                        "content": "You are a content manager working for decision making for book publications workflow"
+                    },
+                    {
+                        "role": "user",
+                        "content": manager_prompt
+                    }
+                ],
+                max_tokens = self.config.MAX_TOKENS,
+                temperature = self.config.TEMPERATURE
+            )
+        
+        manager_decision = manager_decision.choices[0].message.content.strip().lower()
+
+        # as we are using async then need to use await keyword before client call
+        # manager_decision = self.client.models.generate_content(
+        #     model = self.config.MODEL_NAME,
+        #     contents=[manager_prompt],
+        #     config = self.generation_config
+        # )        
+
+        #print(f"Manager Decision: {manager_decision.candidates[0].content.parts[0].text.strip().lower()}")
+        print(f"Manager Decision: {manager_decision}")
         print(f"Manager Iteration Count: {state['iteration_count']}")
         # Clean up the decision (remove extra text)
         #decision = manager_decision.text.strip().lower()
-        decision = manager_decision.candidates[0].content.parts[0].text.strip().lower() 
+        #decision = manager_decision.candidates[0].content.parts[0].text.strip().lower() 
+        decision = manager_decision
         print(f"Decision: {decision}")
         if "human_review" in decision:
             decision = "human_review"

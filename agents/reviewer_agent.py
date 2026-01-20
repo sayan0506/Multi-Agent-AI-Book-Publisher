@@ -4,20 +4,33 @@ from google import genai
 from utils.config import Config, WorkflowState 
 from google.genai.types import GenerateContentConfig
 from langchain_core.messages import AIMessage, HumanMessage
+from openai import OpenAI
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class ReviewerAgent:
     def __init__(self):
         self.config = Config()
-        self.generation_config = GenerateContentConfig(
-            temperature=0.2,
-            max_output_tokens=self.config.GEMINI_OUTPUT_TOKEN_LIMIT,
+        # self.generation_config = GenerateContentConfig(
+        #     temperature=0.2,
+        #     max_output_tokens=self.config.GEMINI_OUTPUT_TOKEN_LIMIT,
+        # )
+        # self.client = genai.Client(
+        #     vertexai=True,
+        #     project=self.config.PROJECT_ID,
+        #     location=self.config.LOCATION,
+        # )
+        self.client = OpenAI(
+            api_key = self.config.LLM_API_KEY, 
+            base_url = self.config.BASE_URL,
         )
-        self.client = genai.Client(
-            vertexai=True,
-            project=self.config.PROJECT_ID,
-            location=self.config.LOCATION,
-        )
+
+        self.model = self.config.MODEL_NAME
+
 
     def review_content(self, state: WorkflowState) -> WorkflowState:
         """Review the spun content against the original content and provide feedback."""
@@ -42,15 +55,32 @@ class ReviewerAgent:
 
         try:
             # as we are using async then need to use await keyword before client call
-            reviewer_feedback = self.client.models.generate_content(
+            # reviewer_feedback = self.client.models.generate_content(
+            #     model = self.config.MODEL_NAME,
+            #     contents = [prompt],
+            #     config = self.generation_config,
+            # )
+            reviewer_feedback = self.client.chat.completions.create(
                 model = self.config.MODEL_NAME,
-                contents = [prompt],
-                config = self.generation_config,
+                messages = [
+                    {
+                        "role": "system",
+                        "content": "You are a creative reviewer working for book review for publications"
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                max_tokens = self.config.MAX_TOKENS,
+                temperature = self.config.TEMPERATURE
             )
+
+            reviewer_feedback = reviewer_feedback.choices[0].message.content
 
             return {
                 **state,
-                "reviewer_feedback": reviewer_feedback.text,
+                "reviewer_feedback": reviewer_feedback, #reviewer_feedback.text,
                 "iteration_count": state.get("iteration_count", 1) + 1,
                 "messages": state.get("messages", []) + [AIMessage(content=f"Reviewer: Feedback recieved by the Reviewer!")],
                 "status": "reviewer_completed",

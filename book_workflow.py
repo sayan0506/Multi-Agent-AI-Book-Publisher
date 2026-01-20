@@ -28,7 +28,11 @@ from langgraph.checkpoint.memory import MemorySaver
 # used to interrupt langgraph flows
 from langgraph.types import interrupt 
 #from langgraph.checkpoint import InMemorySaver
+import logging
 
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class BookPublicationWorkflow:

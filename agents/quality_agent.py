@@ -4,20 +4,33 @@ from google import genai
 from utils.config import Config, WorkflowState 
 from google.genai.types import GenerateContentConfig
 from langchain_core.messages import AIMessage, HumanMessage
+from openai import OpenAI
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class QualityAgent:
     def __init__(self):
         self.config = Config()
-        self.generation_config = GenerateContentConfig(
-            temperature=self.config.TEMPERATURE,
-            max_output_tokens=self.config.GEMINI_OUTPUT_TOKEN_LIMIT
+        # self.generation_config = GenerateContentConfig(
+        #     temperature=self.config.TEMPERATURE,
+        #     max_output_tokens=self.config.GEMINI_OUTPUT_TOKEN_LIMIT
+        # )
+        # self.client = genai.Client(
+        #     project=self.config.PROJECT_ID,
+        #     location=self.config.LOCATION,
+        #     vertexai=True
+        # )
+
+        self.client = OpenAI(
+            api_key = self.config.LLM_API_KEY, 
+            base_url = self.config.BASE_URL,
         )
-        self.client = genai.Client(
-            project=self.config.PROJECT_ID,
-            location=self.config.LOCATION,
-            vertexai=True
-        )
+
+        self.model = self.config.MODEL_NAME
 
     def check_quality(self, state: WorkflowState)-> WorkflowState:
         """
@@ -43,16 +56,36 @@ class QualityAgent:
             
             """
             # as we are using async then need to use await keyword before client call
-            quality_report = self.client.models.generate_content(
-                model=self.config.MODEL_NAME,
-                contents=[prompt],
-                config=self.generation_config
+            # quality_report = self.client.models.generate_content(
+            #     model=self.config.MODEL_NAME,
+            #     contents=[prompt],
+            #     config=self.generation_config
 
+            # )
+
+            quality_report = self.client.chat.completions.create(
+                model = self.config.MODEL_NAME,
+                messages = [
+                    {
+                        "role": "system",
+                        "content": "You are a creative quality analyst working for book publications"
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                max_tokens = self.config.MAX_TOKENS,
+                temperature = self.config.TEMPERATURE
             )
+
+            quality_report = quality_report.choices[0].message.content
+
+            logger.info(f"Quality Report: {quality_report}")
 
             return {
                 **state,
-                "quality_report": quality_report.text,
+                "quality_report": quality_report, #quality_report.text,
                 "messages": state.get("messages",[])+[AIMessage(content="Quality Check Completed!")],
                 "status": "completed",
             }
