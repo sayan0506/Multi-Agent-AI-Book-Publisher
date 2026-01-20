@@ -112,3 +112,96 @@ Combine all values into this JSON:
 4. Paste the JSON
 
 Done! 🎉
+
+Almost! You have the client secret created, but you need to **see the actual Value** to copy it.
+
+The Value shown as `rAq***...` is masked. You need to click the **copy icon** next to it to get the full secret:
+
+1. Click the **copy icon** (📋) next to the Value `rAq***...`
+2. Paste it somewhere safe temporarily
+
+Now you have:
+- ✅ **clientId**: `181e8dae-d3d3-47d7-b567-92710635543`
+- ✅ **clientSecret**: (the value you just copied)
+- ✅ **tenantId**: `04fcb0b9-fe98-436d-8221-2fca9757add9`
+- ⏳ **subscriptionId**: Still need this
+
+**Get Subscription ID:**
+
+1. Search for **"Subscriptions"** in Azure Portal
+2. Click on your subscription
+3. Copy the **Subscription ID**
+
+**Then create the JSON:**
+
+```json
+{
+  "clientId": "181e8dae-d3d3-47d7-b567-92710635543",
+  "clientSecret": "paste-the-copied-secret-here",
+  "subscriptionId": "paste-your-subscription-id-here",
+  "tenantId": "04fcb0b9-fe98-436d-8221-2fca9757add9"
+}
+```
+
+**Finally add to GitHub:**
+1. GitHub repo → **Settings** → **Secrets and variables** → **Actions**
+2. **New repository secret**
+3. Name: `AZURE_CREDENTIALS`
+4. Paste the JSON
+
+Then you're done! 🎉
+
+I see - you're in the **Secrets and variables** page but don't see any secrets listed. You need to scroll down or look for the **Repository secrets** section.
+
+**To add AZURE_CREDENTIALS:**
+
+1. On this page, scroll down to find **"Repository secrets"** section
+2. Click **"New repository secret"** button
+3. Fill in:
+   - **Name**: `AZURE_CREDENTIALS`
+   - **Secret**: Paste your JSON:
+   ```json
+   {
+     "clientId": "181e8dae-da33-47d7-9567-927106355443",
+     "clientSecret": "your-actual-secret-value",
+     "subscriptionId": "4504ddf2-f1c6-4eec-970d-f3eb1ea27330",
+     "tenantId": "04fcb0b9-fe98-436d-8221-2fca9757add9"
+   }
+   ```
+4. Click **Add secret**
+
+**Important:** Make sure:
+- ✅ The JSON is valid (no extra spaces/line breaks)
+- ✅ All 4 fields are included
+- ✅ Secret value is the actual client secret (not masked)
+
+Once added, trigger your workflow again and it should work!
+
+**Give IAM role FIRST** before pushing to GitHub.
+
+Here's the order:
+
+**Step 1: Assign IAM role to service principal** (do this NOW)
+
+1. Go to **Azure Portal** → **Subscriptions**
+2. Select your subscription
+3. Click **Access control (IAM)** → **+ Add** → **Add role assignment**
+4. **Role tab**: Select `Contributor` from **Privileged administrator roles**
+5. Click **Next**
+6. **Members tab**: 
+   - Click **+ Select members**
+   - Search for: `github-actions-sp`
+   - Select it
+   - Click **Review + assign**
+
+**Step 2: Then push code to GitHub**
+
+Once IAM role is assigned, push your code and trigger the workflow.
+
+**Why this order?**
+- The service principal needs permissions BEFORE it tries to authenticate
+- If you push first, the workflow will fail because the app has no access to your Azure resources
+
+So: **IAM role → GitHub push → Workflow runs successfully** ✅
+
+Let me know once you've assigned the role!
