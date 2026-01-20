@@ -1,10 +1,10 @@
 """
 We are defining Writer Agent here
 """
-from google.genai.types import GenerateContentConfig,SafetySetting
+#from google.genai.types import GenerateContentConfig,SafetySetting
 import os, tempfile, re, uuid
-from google.cloud import aiplatform
-from google import genai
+#from google.cloud import aiplatform
+#from google import genai
 from utils.config import Config, WorkflowState
 from typing import Dict 
 # from langchain_google_vertexai import (

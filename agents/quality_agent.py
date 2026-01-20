@@ -1,8 +1,8 @@
 # AI Book Publication
 # This agent will be used to check final quality of the book before publishing
-from google import genai
+#from google import genai
 from utils.config import Config, WorkflowState 
-from google.genai.types import GenerateContentConfig
+#from google.genai.types import GenerateContentConfig
 from langchain_core.messages import AIMessage, HumanMessage
 from openai import OpenAI
 import logging

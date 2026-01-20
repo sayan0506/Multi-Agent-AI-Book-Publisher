@@ -1,7 +1,7 @@
 # manager_agent.py
 # This agent will manage the agents and their interactions with each other decide whether it needs to write, review or human_review needed
-from google import genai
-from google.genai.types import GenerateContentConfig
+#from google import genai
+#from google.genai.types import GenerateContentConfig
 from utils.config import Config, WorkflowState
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from openai import OpenAI

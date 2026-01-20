@@ -1,8 +1,8 @@
 # AI Book Publication Workflow
 # This agent will be used to review the book and provide feedback on it.
-from google import genai
+#from google import genai
 from utils.config import Config, WorkflowState 
-from google.genai.types import GenerateContentConfig
+#from google.genai.types import GenerateContentConfig
 from langchain_core.messages import AIMessage, HumanMessage
 from openai import OpenAI
 import logging
