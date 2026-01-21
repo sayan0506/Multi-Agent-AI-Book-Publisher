@@ -47,3 +47,5 @@ screenshots/
 *.swp
 *.swo
 *~
+AZURE_CREDENTIALS
+creds.md

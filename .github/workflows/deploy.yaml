@@ -49,6 +49,11 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Test ACR access
+        run: |
+          az account show
+          az acr show --name aibookpublisheragentic
+
       - name: Login to Azure Container Registry
         run: az acr login --name aibookpublisheragentic
 
