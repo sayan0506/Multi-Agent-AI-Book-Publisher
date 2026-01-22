@@ -89,13 +89,13 @@ jobs:
           --resource-group ${{ vars.RESOURCE_GROUP }} \
           --environment ${{ vars.CONTAINER_APP_ENV }} \
           --image ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ vars.CONTAINER_NAME }}:latest \
-          --target-port 8501 \
+          --target-port 8080 \
           --ingress external \
           --registry-server ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io \
           --registry-username ${{ secrets.ACR_USERNAME }} \
           --registry-password ${{ secrets.ACR_PASSWORD }} \
           --env-vars \
-            STREAMLIT_SERVER_PORT=8501 \
+            STREAMLIT_SERVER_PORT=8080 \
             STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
             STREAMLIT_SERVER_HEADLESS=true
       # uses: azure/container-apps-deploy-action@v1 
