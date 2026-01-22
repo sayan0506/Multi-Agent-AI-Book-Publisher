@@ -5,6 +5,7 @@ google-cloud-storage==2.18.0
 #google-genai
 #google-cloud-logging
 graphviz==0.21
+openai
 langchain_core==0.3.66
 #langchain_google_vertexai==2.0.26
 langgraph==0.5.0
