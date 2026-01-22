@@ -77,16 +77,18 @@ jobs:
     - name: Deploy to Azure Container Apps 
       uses: azure/container-apps-deploy-action@v1 
       with:
-        registryUrl: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io
-        imageToDeploy: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
-        containerAppName: ${{ env.CONTAINER_APP_NAME }}
-        resourceGroup: ${{ env.RESOURCE_GROUP }}
-        containerAppEnvironment: ${{ env.CONTAINER_APP_ENV }}
+        registryUrl: ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io
+        imageToDeploy: ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ vars.CONTAINER_NAME }}:latest
+        containerAppName: ${{ vars.CONTAINER_APP_NAME }}
+        resourceGroup: ${{ vars.RESOURCE_GROUP }}
+        containerAppEnvironment: ${{ vars.CONTAINER_APP_ENV }}
         targetPort: 8501
         ingress: external 
         environmentVariables: |
           STREAMLIT_SERVER_PORT=8501
           STREAMLIT_SERVER_ADDRESS=0.0.0.0
           STREAMLIT_SERVER_HEADLESS=true
+
+
 
 
