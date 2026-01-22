@@ -59,7 +59,7 @@ jobs:
 
       - name: Build and push Docker image 
         run: |
-          docker build -t aibookpublisheragentic.azurecr.io/ai-book-publisher:latest .
+          docker build --no-cache -t aibookpublisheragentic.azurecr.io/ai-book-publisher:latest .
           docker push aibookpublisheragentic.azurecr.io/ai-book-publisher:latest
 
 
