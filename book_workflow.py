@@ -4,7 +4,7 @@
 ## Installations ##
 # pip install langgraph-checkpoint-sqlite
 
-from google import genai
+#from google import genai
 import os
 import json
 # Graph is a stateless no global state is maintained
