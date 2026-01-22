@@ -67,6 +67,7 @@ jobs:
     needs: build-and-push-image # it basically ensure the previous needed jobs success
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' # it ensures if git repo head is main
+    environment: ai-book-production # reference to github env
 
     steps:
     - name: Azure Login
