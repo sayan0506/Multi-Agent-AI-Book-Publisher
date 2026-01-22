@@ -76,21 +76,36 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Deploy to Azure Container Apps 
-      uses: azure/container-apps-deploy-action@v1 
-      with:
-        registryUrl: ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io
-        imageToDeploy: ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ vars.CONTAINER_NAME }}:latest
-        containerAppName: ${{ vars.CONTAINER_APP_NAME }}
-        resourceGroup: ${{ vars.RESOURCE_GROUP }}
-        containerAppEnvironment: ${{ vars.CONTAINER_APP_ENV }}
-        targetPort: 8501
-        ingress: external 
-        acrUsername: ${{ secrets.ACR_USERNAME }}
-        acrPassword: ${{ secrets.ACR_PASSWORD }}
-        environmentVariables: |
-          STREAMLIT_SERVER_PORT=8501
-          STREAMLIT_SERVER_ADDRESS=0.0.0.0
-          STREAMLIT_SERVER_HEADLESS=true
+      run: |
+        az containerapp create \
+          --name ${{ vars.CONTAINER_APP_NAME }} \
+          --resource-group ${{ vars.RESOURCE_GROUP }} \
+          --environment ${{ vars.CONTAINER_APP_ENV }} \
+          --image ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ vars.CONTAINER_NAME }}:latest \
+          --target-port 8501 \
+          --ingress external \
+          --registry-server ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io \
+          --registry-username ${{ secrets.ACR_USERNAME }} \
+          --registry-password ${{ secrets.ACR_PASSWORD }} \
+          --env-vars \
+            STREAMLIT_SERVER_PORT=8501 \
+            STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
+            STREAMLIT_SERVER_HEADLESS=true
+      # uses: azure/container-apps-deploy-action@v1 
+      # with:
+      #   registryUrl: ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io
+      #   imageToDeploy: ${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ vars.CONTAINER_NAME }}:latest
+      #   containerAppName: ${{ vars.CONTAINER_APP_NAME }}
+      #   resourceGroup: ${{ vars.RESOURCE_GROUP }}
+      #   containerAppEnvironment: ${{ vars.CONTAINER_APP_ENV }}
+      #   targetPort: 8501
+      #   ingress: external 
+      #   acrUsername: ${{ secrets.ACR_USERNAME }}
+      #   acrPassword: ${{ secrets.ACR_PASSWORD }}
+      #   environmentVariables: |
+      #     STREAMLIT_SERVER_PORT=8501
+      #     STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      #     STREAMLIT_SERVER_HEADLESS=true
 
 
 
