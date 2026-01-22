@@ -62,4 +62,31 @@ jobs:
           docker build --no-cache -t aibookpublisheragentic.azurecr.io/ai-book-publisher:latest .
           docker push aibookpublisheragentic.azurecr.io/ai-book-publisher:latest
 
+  # Job 3: Deploy to Azure Container Apps
+  deploy-to-azure:
+    needs: build-and-push-image # it basically ensure the previous needed jobs success
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' # it ensures if git repo head is main
+
+    steps:
+    - name: Azure Login
+      uses: azure/login@v1 
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Deploy to Azure Container Apps 
+      uses: azure/container-apps-deploy-action@v1 
+      with:
+        registryUrl: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io
+        imageToDeploy: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+        containerAppName: ${{ env.CONTAINER_APP_NAME }}
+        resourceGroup: ${{ env.RESOURCE_GROUP }}
+        containerAppEnvironment: ${{ env.CONTAINER_APP_ENV }}
+        targetPort: 8501
+        ingress: external 
+        environmentVariables: |
+          STREAMLIT_SERVER_PORT=8501
+          STREAMLIT_SERVER_ADDRESS=0.0.0.0
+          STREAMLIT_SERVER_HEADLESS=true
+
 
