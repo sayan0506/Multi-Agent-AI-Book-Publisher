@@ -89,9 +89,10 @@ jobs:
           echo "Container App Environment exists."
         fi
 
+    # Check if container app exists
     - name: Deploy to Azure Container Apps 
       run: |
-        if ! az containerapp show \ # Check if container app exists
+        if ! az containerapp show \ 
              --name ${{ vars.CONTAINER_APP_NAME }} \
              --resource-group ${{ vars.RESOURCE_GROUP }} &>/dev/null; then
           echo "Container App does not exist. Creating..."
