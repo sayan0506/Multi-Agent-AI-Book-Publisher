@@ -49,7 +49,12 @@ class ContentScraper:
         async with async_playwright() as p:
             # launch the browser with now browser window
             # as we dont want to open browser window in case of dockerized cloudrun deployed run
-            browser = await p.chromium.launch(headless=True)
+            browser = await p.chromium.launch(headless=True,
+                                              args = [
+                                                "--no-sandbox",
+                                                "--disable-dev-shm-usage",
+                                                "--disable-gpu"
+                                              ])
             # opens the new page
             page = await browser.new_page()
 
