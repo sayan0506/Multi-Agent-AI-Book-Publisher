@@ -10,7 +10,7 @@ langchain_core==0.3.66
 #langchain_google_vertexai==2.0.26
 langgraph==0.5.0
 Pillow==11.2.1
-#playwright==1.50.0
+playwright==1.50.0
 #playwright==1.52.0
 protobuf==3.20.3
 python-dotenv==1.1.1
