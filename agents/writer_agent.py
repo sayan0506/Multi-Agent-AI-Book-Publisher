@@ -16,6 +16,8 @@ from typing import Dict
 from openai import OpenAI
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from chroma_manager import ChromaManager
+from langsmith import traceable
+from langsmith.wrappers import wrap_openai
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -34,10 +36,10 @@ class WriterAgent:
         #     project=self.config.PROJECT_ID,
         #     location=self.config.LOCATION,
         # )
-        self.client = OpenAI(
+        self.client = wrap_openai(OpenAI(
             api_key = self.config.LLM_API_KEY, 
             base_url = self.config.BASE_URL,
-        )
+        ))
 
         self.model = self.config.MODEL_NAME
 
@@ -51,6 +53,7 @@ class WriterAgent:
 
     # This function will take original content and generate new content based on it
     # the instrucitons is initialized to "" emoty string instructions: str=""
+    @traceable(name="writer agent")
     def spin_content(self, state: WorkflowState) -> WorkflowState:
     #def spin_content(self, original_content: str, instructions: str = "") -> Dict:
         """
@@ -134,14 +137,14 @@ class WriterAgent:
                 **state,
                 'current_content': writer_output,#writer_output.text,
                 'writer_output': writer_output,#writer_output.text,
-                'messsages' : AIMessage(content=f"Writer: Content enhanced and rewritten"),
+                'messages' : state.get("messages", []) + [AIMessage(content=f"Writer: Content enhanced and rewritten")],
                 "status": "writer_completed"
             }
         except Exception as e:
             print(f"An error occurred: {e}")
             return {
                 **state,
-                'messages': AIMessage(content=f"Writer: Error occurred during spinning content"),
+                'messages': state.get("messages", []) + [AIMessage(content=f"Writer: Error occurred during spinning content")],
                 'status': 'writer_error',       
                 }
 

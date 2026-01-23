@@ -4,6 +4,8 @@
 #from google.genai.types import GenerateContentConfig
 from utils.config import Config, WorkflowState
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langsmith import traceable
+from langsmith.wrappers import wrap_openai
 from openai import OpenAI
 import logging
 
@@ -24,14 +26,14 @@ class ManagerAgent:
         #     location=self.config.LOCATION,
         #     vertexai=True
         # )
-        self.client = OpenAI(
+        self.client = wrap_openai(OpenAI(
             api_key = self.config.LLM_API_KEY, 
             base_url = self.config.BASE_URL,
-        )
+        ))
 
         self.model = self.config.MODEL_NAME
 
-
+    @traceable(name = "manager_agent")
     def manager_workflow(self, state: WorkflowState)->WorkflowState:
         """Content Manager Agent - Makes workflow decisions based on current state of workflow"""
 

@@ -4,6 +4,8 @@
 from utils.config import Config, WorkflowState 
 #from google.genai.types import GenerateContentConfig
 from langchain_core.messages import AIMessage, HumanMessage
+from langsmith import traceable
+from langsmith.wrappers import wrap_openai
 from openai import OpenAI
 import logging
 
@@ -25,13 +27,14 @@ class QualityAgent:
         #     vertexai=True
         # )
 
-        self.client = OpenAI(
+        self.client = wrap_openai(OpenAI(
             api_key = self.config.LLM_API_KEY, 
             base_url = self.config.BASE_URL,
-        )
+        ))
 
         self.model = self.config.MODEL_NAME
 
+    @traceable(name="quality_agent")
     def check_quality(self, state: WorkflowState)-> WorkflowState:
         """
         Final quality check for the book.

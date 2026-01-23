@@ -27,6 +27,10 @@ from langgraph.checkpoint.memory import MemorySaver
 #from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 # used to interrupt langgraph flows
 from langgraph.types import interrupt 
+
+# tracibility
+from langsmith import traceable
+
 #from langgraph.checkpoint import InMemorySaver
 import logging
 
