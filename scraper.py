@@ -52,6 +52,9 @@ class ContentScraper:
             browser = await p.chromium.launch(headless=True,
                                               args = [
                                                 "--no-sandbox",
+                                                "--disable-setuid-sandbox",
+                                                "--no-zygote",
+                                                "--single-process",
                                                 "--disable-dev-shm-usage",
                                                 "--disable-gpu"
                                               ])
@@ -108,7 +111,12 @@ class ContentScraper:
             
             except Exception as e:
                 print(f"Error scraping content: {e}")
-                return None
+                #return None
+                return {
+                    **state,
+                    "status": "scrape_failed",
+                    "error": str(e)
+                }
             
             finally:
                 # close the browser
